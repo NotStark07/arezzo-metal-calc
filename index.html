@@ -656,7 +656,7 @@
   const metalCodes = { gold: 'XAU', silver: 'XAG', platinum: 'XPT', palladium: 'XPD' };
 
   /* --- Live Price Fetching --- */
-  let apiKey = '';
+  let apiKey = 'goldapi-4lb3vsmnas3kuk-io';
   let priceRefreshInterval = null;
 
   function saveApiKey() {
@@ -718,17 +718,17 @@
     }
   }
 
-  // On load: try to restore saved API key
+  // On load: fetch prices with hardcoded key (localStorage override if present)
   (function initPrices() {
     try {
       const saved = localStorage.getItem('goldapi_key');
-      if (saved) {
-        apiKey = saved;
-        document.getElementById('apiKeyInput').value = saved;
-        fetchAllPrices();
-        priceRefreshInterval = setInterval(fetchAllPrices, 60 * 60 * 1000);
-      }
+      if (saved) apiKey = saved;
     } catch(e) {}
+    if (apiKey) {
+      document.getElementById('apiKeyInput').value = apiKey;
+      fetchAllPrices();
+      priceRefreshInterval = setInterval(fetchAllPrices, 60 * 60 * 1000);
+    }
   })();
 
   function applyManualPrices() {
