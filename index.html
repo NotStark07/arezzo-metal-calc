@@ -23,34 +23,34 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   :root {
-    --gold: #C9A84C;
-    --gold-light: #E8D5A0;
+    --gold: #D4B45C;
+    --gold-light: #F0DFB0;
     --gold-dark: #8B6914;
-    --obsidian: #0A0A0C;
-    --charcoal: #141418;
-    --slate: #1E1E24;
-    --pearl: #F5F0E8;
+    --obsidian: #0E0E12;
+    --charcoal: #1A1A20;
+    --slate: #26262E;
+    --pearl: #F8F4EE;
     --ivory: #FFF9F0;
-    --cash-green: #3A7D5C;
-    --cash-green-light: #4DA676;
-    --trade-blue: #4A6FA5;
-    --trade-blue-light: #6B8FC5;
-    --muted: #6B6B78;
-    --divider: rgba(201, 168, 76, 0.15);
+    --cash-green: #48956E;
+    --cash-green-light: #62C08E;
+    --trade-blue: #5A84BF;
+    --trade-blue-light: #82AAE0;
+    --muted: #9494A4;
+    --divider: rgba(212, 180, 92, 0.18);
     --bg: var(--obsidian);
     --card-bg: var(--charcoal);
     --input-bg: var(--slate);
     --text: var(--pearl);
-    --danger: #A0454A;
-    --danger-light: #C76A6F;
+    --danger: #C05A60;
+    --danger-light: #E08088;
   }
 
   @media (prefers-color-scheme: light) {
     :root {
-      --bg: #FAF8F5; --card-bg: #FFFFFF; --input-bg: #F0EDE8;
-      --text: #1A1A1E; --muted: #8A8A96;
-      --divider: rgba(139, 105, 20, 0.15);
-      --slate: #F0EDE8; --charcoal: #FFFFFF;
+      --bg: #F8F6F2; --card-bg: #FFFFFF; --input-bg: #EDEAE4;
+      --text: #141418; --muted: #6E6E7A;
+      --divider: rgba(139, 105, 20, 0.18);
+      --slate: #EDEAE4; --charcoal: #FFFFFF;
     }
   }
 
@@ -142,7 +142,7 @@
   }
   .field select option { background: var(--card-bg); color: var(--text); }
   .field select:focus, .field input:focus { border-color: var(--gold); box-shadow: 0 0 0 1px rgba(201, 168, 76, 0.15); }
-  .field input::placeholder { color: var(--muted); font-weight: 300; opacity: 0.5; }
+  .field input::placeholder { color: var(--muted); font-weight: 300; opacity: 0.7; }
   .field input[type=number]::-webkit-inner-spin-button,
   .field input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
   .field input[type=number] { -moz-appearance: textfield; }
@@ -154,7 +154,7 @@
     padding: 12px 16px; border-radius: 2px; outline: none; transition: border-color 0.3s;
   }
   .form-desc-row input:focus { border-color: var(--gold); }
-  .form-desc-row input::placeholder { color: var(--muted); font-weight: 300; opacity: 0.5; }
+  .form-desc-row input::placeholder { color: var(--muted); font-weight: 300; opacity: 0.7; }
 
   .purity-presets { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
   .purity-chip {
@@ -348,7 +348,7 @@
     padding: 12px 16px; border-radius: 2px; outline: none; transition: border-color 0.3s;
   }
   .modal-field input:focus { border-color: var(--gold); }
-  .modal-field input::placeholder { color: var(--muted); opacity: 0.5; }
+  .modal-field input::placeholder { color: var(--muted); opacity: 0.7; }
   .modal-field .optional-tag { font-size: 0.5rem; color: var(--muted); font-style: italic; margin-left: 6px; text-transform: none; letter-spacing: 0.02em; }
   .modal-field .field-error { font-size: 0.55rem; color: var(--danger-light); margin-top: 4px; display: none; }
 
