@@ -720,7 +720,9 @@
     if (!success) {
       const now = new Date();
       const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-      status.innerHTML = '<span class="ticker-dot" style="background:var(--danger);"></span> API unavailable at ' + timeStr + ' — using cached prices. Use manual override below.';
+      const isLocal = window.location.protocol === 'file:';
+      const hint = isLocal ? 'Local files cannot call APIs. Host on GitHub Pages or use manual override.' : 'Check API key or connection. Use manual override below.';
+      status.innerHTML = '<span class="ticker-dot" style="background:var(--danger);"></span> Price fetch failed at ' + timeStr + '. <span style="font-size:0.48rem;opacity:0.7;">' + hint + '</span>';
     }
   }
 
