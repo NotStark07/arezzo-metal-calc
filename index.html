@@ -605,12 +605,12 @@
 
     <!-- API Key -->
     <div style="border-top:1px solid var(--divider); padding:20px 0 8px; margin:0 auto; max-width:700px;">
-      <div style="font-size:0.55rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; opacity:0.7;">Live API &mdash; <a href="https://www.goldapi.io/" target="_blank" style="color:var(--muted); text-decoration:underline; opacity:0.8;">GoldAPI.io</a></div>
+      <div style="font-size:0.55rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; opacity:0.7;">Live API &mdash; <a href="https://metals.dev/" target="_blank" style="color:var(--muted); text-decoration:underline; opacity:0.8;">Metals.dev</a></div>
       <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
         <input type="text" id="apiKeyInput" placeholder="Paste API key" style="flex:1; min-width:200px; background:var(--input-bg); border:1px solid var(--divider); color:var(--text); font-family:'Montserrat',sans-serif; font-size:0.7rem; padding:8px 10px; border-radius:2px; outline:none; opacity:0.8;">
         <button onclick="saveApiKey()" style="background:var(--input-bg); border:1px solid var(--divider); color:var(--gold); font-family:'Montserrat',sans-serif; font-size:0.5rem; letter-spacing:0.12em; text-transform:uppercase; padding:9px 16px; border-radius:2px; cursor:pointer; transition:all 0.2s; opacity:0.8;">Save &amp; Fetch</button>
       </div>
-      <div style="font-size:0.48rem; color:var(--muted); margin-top:6px; opacity:0.5;">Refreshes hourly &middot; Free tier: 300 requests/month &middot; No credit card required</div>
+      <div style="font-size:0.48rem; color:var(--muted); margin-top:6px; opacity:0.5;">Refreshes hourly &middot; Free plan: 100 requests/month &middot; CORS supported &middot; No credit card required</div>
     </div>
   </div>
 </div>
@@ -656,16 +656,15 @@
   const metalCodes = { gold: 'XAU', silver: 'XAG', platinum: 'XPT', palladium: 'XPD' };
 
   /* --- Live Price Fetching --- */
-  let apiKey = 'goldapi-4lb3vsmnas3kuk-io';
+  let apiKey = 'UCPD7PBNPYUTLLYBGUYX771YBGUYX';
   let priceRefreshInterval = null;
 
   function saveApiKey() {
     const key = document.getElementById('apiKeyInput').value.trim();
     if (!key) return;
     apiKey = key;
-    try { localStorage.setItem('goldapi_key', key); } catch(e) {}
+    try { localStorage.setItem('metalsdev_key', key); } catch(e) {}
     fetchAllPrices();
-    // Auto-refresh every hour
     if (priceRefreshInterval) clearInterval(priceRefreshInterval);
     priceRefreshInterval = setInterval(fetchAllPrices, 60 * 60 * 1000);
   }
@@ -677,51 +676,58 @@
     document.getElementById('tickPalladium').textContent = fmt(spotPrices.palladium);
   }
 
-  async function fetchMetalPrice(metalCode) {
-    const resp = await fetch('https://www.goldapi.io/api/' + metalCode + '/USD', {
-      headers: { 'x-access-token': apiKey, 'Content-Type': 'application/json' }
-    });
-    if (!resp.ok) throw new Error('API error ' + resp.status);
-    const data = await resp.json();
-    if (data.price) return data.price;
-    throw new Error('No price in response');
-  }
-
   async function fetchAllPrices() {
     if (!apiKey) return;
     const status = document.getElementById('tickerStatus');
     status.innerHTML = '<span class="ticker-dot" style="background:var(--gold);"></span> Fetching live prices...';
 
-    let success = 0;
-    for (const metal of metalOrder) {
+    // Build the Metals.dev URL
+    const directUrl = 'https://api.metals.dev/v1/latest?api_key=' + apiKey + '&currency=USD&unit=toz';
+    const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(directUrl);
+
+    // Try direct first, then CORS proxy
+    const urls = [directUrl, proxyUrl];
+    let success = false;
+
+    for (const url of urls) {
       try {
-        const price = await fetchMetalPrice(metalCodes[metal]);
-        spotPrices[metal] = price;
-        success++;
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const data = await resp.json();
+
+        if (data.metals) {
+          if (data.metals.gold) spotPrices.gold = data.metals.gold;
+          if (data.metals.silver) spotPrices.silver = data.metals.silver;
+          if (data.metals.platinum) spotPrices.platinum = data.metals.platinum;
+          if (data.metals.palladium) spotPrices.palladium = data.metals.palladium;
+          updateTickerDisplay();
+          success = true;
+
+          const now = new Date();
+          const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+          const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          status.innerHTML = '<span class="ticker-dot"></span> Live prices updated ' + dateStr + ' at ' + timeStr;
+          break;
+        } else {
+          throw new Error(data.message || 'No metals data');
+        }
       } catch(e) {
-        console.warn('Failed to fetch ' + metal + ':', e.message);
+        console.warn('Fetch attempt failed:', e.message);
+        continue;
       }
     }
 
-    updateTickerDisplay();
-
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-
-    if (success === 4) {
-      status.innerHTML = '<span class="ticker-dot"></span> Live prices updated ' + dateStr + ' at ' + timeStr;
-    } else if (success > 0) {
-      status.innerHTML = '<span class="ticker-dot" style="background:var(--gold);"></span> Partially updated ' + dateStr + ' at ' + timeStr + ' (' + success + '/4 metals)';
-    } else {
-      status.innerHTML = '<span class="ticker-dot" style="background:var(--danger);"></span> Price fetch failed — using cached prices';
+    if (!success) {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      status.innerHTML = '<span class="ticker-dot" style="background:var(--danger);"></span> API unavailable at ' + timeStr + ' — using cached prices. Use manual override below.';
     }
   }
 
-  // On load: fetch prices with hardcoded key (localStorage override if present)
+  // On load: fetch prices
   (function initPrices() {
     try {
-      const saved = localStorage.getItem('goldapi_key');
+      const saved = localStorage.getItem('metalsdev_key');
       if (saved) apiKey = saved;
     } catch(e) {}
     if (apiKey) {
